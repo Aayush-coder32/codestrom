@@ -16,7 +16,8 @@ export function calculate(expression: string): number {
     if (/^\d/.test(token)) { const value = Number(token); if (!Number.isFinite(value) || Math.abs(value) > 1e12) throw new Error('Number out of range'); values.push(value); continue; }
     if (token === '(') { ops.push(token); continue; }
     if (token === ')') { while (ops.at(-1) && ops.at(-1) !== '(') reduce(); if (ops.pop() !== '(') throw new Error('Invalid expression'); continue; }
-    while (ops.at(-1) && ops.at(-1) !== '(' && operators[ops.at(-1)].precedence >= operators[token].precedence) reduce();
+    const top = ops.at(-1);
+    while (top && top !== '(' && operators[top].precedence >= operators[token].precedence) reduce();
     ops.push(token);
   }
   while (ops.length) { if (ops.at(-1) === '(') throw new Error('Invalid expression'); reduce(); }
