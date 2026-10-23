@@ -1,1 +1,1 @@
-{"root":["./src/main.tsx","./src/app/app.tsx","./src/pages/chatpage.tsx","./src/pages/loginpage.tsx","./src/services/api.ts"],"errors":true,"version":"5.9.3"}
+{"root":["./src/app.test.ts","./src/main.tsx","./src/app/app.tsx","./src/pages/chatpage.tsx","./src/pages/loginpage.tsx","./src/services/api.ts"],"version":"5.9.3"}
