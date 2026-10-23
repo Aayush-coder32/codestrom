@@ -35,7 +35,10 @@ export function ChatPage({ user, onLogout }: { user: User; onLogout: () => void 
     const controller = new AbortController(); abortRef.current = controller;
     try {
       const response = await fetch(`${baseUrl}/chat/stream`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conversationId, content }), signal: controller.signal });
-      if (!response.ok || !response.body) throw new Error('Unable to start generation');
+      if (!response.ok || !response.body) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error ?? `Unable to start generation (${response.status})`);
+      }
       const returnedId = response.headers.get('X-Conversation-Id');
       if (returnedId && !conversationId) { setConversationId(returnedId); setConversations((items) => [{ _id: returnedId, title: content.slice(0, 60), lastMessageAt: new Date().toISOString() }, ...items]); }
       const reader = response.body.getReader(); const decoder = new TextDecoder(); let assistant = ''; let buffer = '';
@@ -43,9 +46,19 @@ export function ChatPage({ user, onLogout }: { user: User; onLogout: () => void 
       while (true) {
         const { value, done } = await reader.read(); if (done) break; buffer += decoder.decode(value, { stream: true });
         const events = buffer.split('\n\n'); buffer = events.pop() ?? '';
-        for (const eventText of events) { const line = eventText.split('\n').find((item) => item.startsWith('data:')); if (!line) continue; try { const data = JSON.parse(line.slice(5)); if (data.delta) { assistant += data.delta; setMessages((current) => current.map((message) => message._id === assistantId ? { ...message, content: assistant } : message)); } } catch { /* Ignore incomplete SSE frames. */ } }
+        for (const eventText of events) {
+          const line = eventText.split('\n').find((item) => item.startsWith('data:'));
+          if (!line) continue;
+          try {
+            const data = JSON.parse(line.slice(5));
+            if (eventText.split('\n').some((item) => item.trim() === 'event: error')) throw new Error(data.error ?? 'The AI service could not complete the response.');
+            if (data.delta) { assistant += data.delta; setMessages((current) => current.map((message) => message._id === assistantId ? { ...message, content: assistant } : message)); }
+          } catch (error) {
+            if (error instanceof Error && error.message !== 'Unexpected end of JSON input') throw error;
+          }
+        }
       }
-    } catch (error) { if ((error as Error).name !== 'AbortError') setMessages((current) => [...current, { _id: crypto.randomUUID(), role: 'assistant', content: 'I could not complete that request. Please try again.' }]); }
+    } catch (error) { if ((error as Error).name !== 'AbortError') setMessages((current) => [...current, { _id: crypto.randomUUID(), role: 'assistant', content: error instanceof Error ? error.message : 'I could not complete that request. Please try again.' }]); }
     finally { setBusy(false); abortRef.current = undefined; }
   };
   const shownConversations = conversations.filter((item) => item.title.toLowerCase().includes(search.toLowerCase()));

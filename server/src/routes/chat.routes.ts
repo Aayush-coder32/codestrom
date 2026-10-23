@@ -4,6 +4,7 @@ import { authenticate } from '../middleware/authenticate.js';
 import { Conversation } from '../models/Conversation.js';
 import { Message } from '../models/Message.js';
 import { streamReply } from '../services/chat.service.js';
+import { env } from '../config/env.js';
 
 const router = Router();
 router.post('/stream', authenticate, async (req, res) => {
@@ -15,10 +16,12 @@ router.post('/stream', authenticate, async (req, res) => {
   const history = await Message.find({ conversationId: conversation._id, role: { $in: ['user', 'assistant'] } }).sort({ createdAt: 1 }).limit(40).lean();
   res.status(200).set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'X-Conversation-Id': String(conversation._id) });
   res.flushHeaders();
-  const send = (event: string, data: unknown) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  const send = (event: string, data: unknown) => {
+    if (!res.destroyed && !res.writableEnded) res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
   send('message_start', { conversationId: String(conversation._id) });
   const controller = new AbortController();
-  req.on('close', () => controller.abort());
+  res.on('close', () => { if (!res.writableEnded) controller.abort(); });
   let content = '';
   try {
     for await (const delta of streamReply(history.map((message) => ({ role: message.role as 'user' | 'assistant', content: message.content })), controller.signal)) { content += delta; send('content_delta', { delta }); }
@@ -26,7 +29,13 @@ router.post('/stream', authenticate, async (req, res) => {
     await Conversation.updateOne({ _id: conversation._id }, { lastMessageAt: new Date() });
     send('message_complete', { content });
   } catch (error) {
-    if (!controller.signal.aborted) send('error', { error: error instanceof Error ? error.message : 'Generation failed' });
+    if (!controller.signal.aborted) {
+      console.error('Chat response generation failed', error);
+      const message = env.NODE_ENV === 'development' && error instanceof Error
+        ? error.message
+        : 'The AI service could not complete the response. Check the server logs for details.';
+      send('error', { error: message });
+    }
   } finally { res.end(); }
 });
 export default router;
