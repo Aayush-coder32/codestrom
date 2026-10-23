@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowRight, Bot, Check, ChevronDown, Command, FileText, FolderOpen, LogOut, Menu, MessageSquare, MoreHorizontal, Plus, Search, Send, Settings2, Sparkles, Square, WandSparkles } from 'lucide-react';
-import { api, baseUrl, type Conversation, type Message, type User } from '../services/api';
+import { api, authenticatedFetch, type Conversation, type Message, type User } from '../services/api';
 
 const starters = [
   { title: 'Untangle an idea', detail: 'Think through something on your mind', icon: Sparkles, prompt: 'Help me think through an idea I have.' },
@@ -34,7 +34,7 @@ export function ChatPage({ user, onLogout }: { user: User; onLogout: () => void 
     setInput(''); setMessages((current) => [...current, { _id: crypto.randomUUID(), role: 'user', content }]); setBusy(true);
     const controller = new AbortController(); abortRef.current = controller;
     try {
-      const response = await fetch(`${baseUrl}/chat/stream`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conversationId, content }), signal: controller.signal });
+      const response = await authenticatedFetch('/chat/stream', { method: 'POST', body: JSON.stringify({ conversationId, content }), signal: controller.signal });
       if (!response.ok || !response.body) {
         const result = await response.json().catch(() => ({}));
         throw new Error(result.error ?? `Unable to start generation (${response.status})`);
