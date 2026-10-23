@@ -11,7 +11,9 @@ router.get('/', async (req, res) => res.json({ documents: await Document.find({ 
 router.post('/upload', upload.single('file'), async (req, res) => {
   if (!req.file) { res.status(400).json({ error: 'A PDF file is required' }); return; }
   const document = await Document.create({ ownerId: req.userId, originalName: req.file.originalname, storageKey: `memory:${Date.now()}`, mimeType: req.file.mimetype, sizeBytes: req.file.size, extractedText: req.file.buffer.toString('utf8'), processingStatus: 'ready', chunkCount: 1 });
-  res.status(201).json({ document: document.toObject({ transform: (_doc, ret) => { delete ret.extractedText; return ret; } }) });
+  const payload = document.toObject() as Record<string, unknown>;
+  delete payload.extractedText;
+  res.status(201).json({ document: payload });
 });
 router.delete('/:id', async (req, res) => { const result = await Document.deleteOne({ _id: req.params.id, ownerId: req.userId }); if (!result.deletedCount) { res.status(404).json({ error: 'Document not found' }); return; } res.status(204).send(); });
 export default router;
