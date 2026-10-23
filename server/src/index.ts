@@ -1,6 +1,9 @@
+import dns from 'node:dns/promises';
 import { app } from './app.js';
 import { connectDatabase } from './config/database.js';
 import { env } from './config/env.js';
+
+dns.setServers(['1.1.1.1', '8.8.8.8']);
 
 try {
   await connectDatabase();
