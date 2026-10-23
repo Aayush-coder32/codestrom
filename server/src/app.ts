@@ -1,0 +1,23 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
+import authRoutes from './routes/auth.routes.js';
+import conversationRoutes from './routes/conversation.routes.js';
+import chatRoutes from './routes/chat.routes.js';
+import documentRoutes from './routes/document.routes.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { env } from './config/env.js';
+
+export const app = express();
+app.use(helmet());
+app.use(cors({ origin: env.FRONTEND_ORIGIN, credentials: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(cookieParser());
+app.get('/api/health', (_req, res) => res.json({ status: 'ok', service: 'nexus-api', time: new Date().toISOString() }));
+app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: true }), authRoutes);
+app.use('/api/conversations', conversationRoutes);
+app.use('/api/chat', rateLimit({ windowMs: 60 * 1000, limit: 30, standardHeaders: true }), chatRoutes);
+app.use('/api/documents', documentRoutes);
+app.use(errorHandler);
