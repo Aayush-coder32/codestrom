@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowRight, ArrowUpRight, Check, Command, FileText, Layers3, LockKeyhole, MessageSquare, Sparkles, WandSparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const prompts = ['Map out a product launch', 'Explain this like I’m new to it', 'Turn notes into a clear brief'];
+const prompts = ['Map out a product launch', 'Explain this in simple terms', 'Turn notes into a clear brief'];
 
 export function LandingPage() {
   return <main className="landing-page">
@@ -16,9 +16,9 @@ export function LandingPage() {
       <div className="hero-copy">
         <div className="hero-kicker"><span className="kicker-spark"><Sparkles size={13} /></span> A calmer way to work with AI <span className="kicker-line" /></div>
         <h1>Make room for<br /><span className="headline-accent">better thinking.</span></h1>
-        <p className="hero-description">A clear space to explore ideas, untangle the complex, and turn what’s next into something real.</p>
+        <p className="hero-description">A clear space to explore ideas, untangle the complex, and turn your next thought into something real.</p>
         <div className="hero-buttons"><Link to="/login?signup=true" className="hero-primary">Start a conversation <ArrowRight size={17} /></Link><a href="#features" className="hero-secondary">Meet your new workspace <ArrowDown size={15} /></a></div>
-        <div className="hero-proof"><div className="proof-avatars"><span>N</span><span>✳</span><span>✦</span></div><p><strong>One thoughtful space.</strong><br />For all the things you’re figuring out.</p></div>
+        <div className="hero-proof"><div className="proof-avatars"><span>N</span><span>✳</span><span>✦</span></div><p><strong>One thoughtful space.</strong><br />For everything you are figuring out.</p></div>
       </div>
 
       <div className="preview-wrap" aria-label="Nexus AI workspace preview">
@@ -36,6 +36,6 @@ export function LandingPage() {
     </section>
 
     <section className="landing-strip" id="features"><div className="strip-intro"><span className="strip-kicker">YOUR THINKING, IN GOOD COMPANY</span><p>Less noise. More <em>possibility.</em></p></div><div className="strip-features"><div className="strip-feature"><span className="feature-index">01</span><div><strong>Start anywhere</strong><small>Bring a question, a draft, or a half-formed idea.</small></div></div><div className="strip-feature"><span className="feature-index">02</span><div><strong>Find your thread</strong><small>Explore, refine, and make sense of what matters.</small></div></div><div className="strip-feature"><span className="feature-index">03</span><div><strong>Keep what clicks</strong><small>Your conversations are here when you return.</small></div></div></div></section>
-    <section className="landing-bottom" id="how-it-works"><span className="bottom-spark">✳</span><span>Curiosity is a good place to begin.</span><Link to="/login?signup=true">Come on in <ArrowRight size={14} /></Link><span className="bottom-footnote">A thoughtful workspace for whatever’s next.</span></section>
+    <section className="landing-bottom" id="how-it-works"><span className="bottom-spark">✳</span><span>Curiosity is a good place to begin.</span><Link to="/login?signup=true">Come on in <ArrowRight size={14} /></Link><span className="bottom-footnote">A thoughtful workspace for what comes next.</span></section>
   </main>;
 }

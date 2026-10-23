@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { api, refreshSession, setAccessToken, type User } from '../services/api';
 import { LoginPage } from '../pages/LoginPage';
 import { ChatPage } from '../pages/ChatPage';
