@@ -1,8 +1,10 @@
 import { FormEvent, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api, setAccessToken, type User } from '../services/api';
 
 export function LoginPage({ onLogin }: { onLogin: (user: User) => void }) {
-  const [signup, setSignup] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [signup, setSignup] = useState(searchParams.get('signup') === 'true');
   const [error, setError] = useState('');
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setError('');
